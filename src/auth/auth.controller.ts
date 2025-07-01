@@ -19,8 +19,8 @@ export class AuthController {
   }
   @Get('current-user')
   @UseGuards(IsAuthGuard)
-  getCurrentuser(@UserId() userId) {
+  getCurrentuser(@UserId() userId, @Req() req) {
     console.log(userId);
-    return this.authService.getCurrentUser(userId);
+    return this.authService.getCurrentUser(userId,req);
   }
 }

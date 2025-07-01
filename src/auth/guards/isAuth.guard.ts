@@ -24,6 +24,7 @@ export class IsAuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET,
       });
       req.userId = payload.id;
+      console.log(payload, 'payload')
     } catch (e) {
       throw new UnauthorizedException('token expired');
     }

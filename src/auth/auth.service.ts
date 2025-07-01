@@ -14,7 +14,7 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
   ) {}
-  async signUp({ email, password }: SignUpDto) {
+  async signUp({ email, password,fullName,image }: SignUpDto) {
     const existUser = await this.userModel.findOne({ email });
     if (existUser) {
       throw new BadRequestException('user alredy exists');
@@ -23,6 +23,8 @@ export class AuthService {
     const newUser = await this.userModel.create({
       email,
       password: hashedPassword,
+      fullName,
+      image
     });
 
     return { message: 'sign up passed successfully', data: newUser };
@@ -45,8 +47,9 @@ export class AuthService {
     const token = this.jwtService.sign(payload, { expiresIn: '1h' });
     return { token };
   }
-  async getCurrentUser(userId) {
+  async getCurrentUser(userId,req) {
     const user = await this.userModel.findById(userId);
+    console.log(req.userId, 'reqqqqqqqqqqqqq')
     return user;
   }
 }

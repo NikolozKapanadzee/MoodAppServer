@@ -21,6 +21,10 @@ export class UsersController {
   getUserById(@Param('id') id) {
     return this.usersService.getUserById(id);
   }
+  @Post()
+  create(@Body() CreateUserDto: CreateUserDto){
+    return this.usersService.createUser(CreateUserDto)
+  }
   @Delete(':id')
   deleteUserById(@Param('id') id) {
     return this.usersService.deleteUserById(id);

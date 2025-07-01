@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { User } from './schema/users.schema';
 @Injectable()
 export class UsersService {
@@ -17,6 +17,7 @@ export class UsersService {
     return await this.userModel.find();
   }
   async getUserById(id: string) {
+    if(!isValidObjectId(id)) throw new BadRequestException('invalid id')
     const user = await this.userModel.findById(id);
     if (!user) {
       throw new NotFoundException('user not found');
@@ -24,7 +25,7 @@ export class UsersService {
     return user;
   }
   async createUser(createUserDto: CreateUserDto) {
-    const { email, password } = createUserDto;
+    const { email, password,fullName, image } = createUserDto;
     const existUser = await this.userModel.findOne({ email });
     if (existUser) {
       throw new BadRequestException('email already exists');
@@ -35,20 +36,25 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const createdUser = await this.userModel.create({ email, password });
+    const createdUser = await this.userModel.create({ email, password,fullName,image });
     return {
       message: 'user successfully created',
       user: createdUser,
     };
   }
   async deleteUserById(id: string) {
-    const user = await this.userModel.findByIdAndDelete(id);
+    if(!isValidObjectId(id)) throw new BadRequestException('invalid id')
+    const user = await this.userModel.findById(id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    return { message: 'user successfully deleted', user: user };
+    const deleted = await this.userModel.findByIdAndDelete(id)
+    return { message: 'user successfully deleted', user: deleted };
   }
   async updateUserById(id: string, updateUserDto: UpdateUserDto) {
+    if(!isValidObjectId(id)) throw new BadRequestException('invalid id')
+      const user = await this.userModel.findById(id)
+    if(!user) throw new BadRequestException('user not found')
     const updatedUser = await this.userModel.findByIdAndUpdate(
       id,
       updateUserDto,
@@ -57,9 +63,6 @@ export class UsersService {
         runValidators: true,
       },
     );
-    if (!updatedUser) {
-      throw new NotFoundException('user not found');
-    }
     return {
       message: 'user successfully updated',
       user: updatedUser,
