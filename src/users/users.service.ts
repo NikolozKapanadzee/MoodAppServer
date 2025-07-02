@@ -14,18 +14,18 @@ import { User } from './schema/users.schema';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   async getAllUsers() {
-    return await this.userModel.find();
+    return await this.userModel.find().populate('moods');
   }
   async getUserById(id: string) {
-    if(!isValidObjectId(id)) throw new BadRequestException('invalid id')
-    const user = await this.userModel.findById(id);
+    if (!isValidObjectId(id)) throw new BadRequestException('invalid id');
+    const user = await this.userModel.findById(id).populate('moods');
     if (!user) {
       throw new NotFoundException('user not found');
     }
     return user;
   }
   async createUser(createUserDto: CreateUserDto) {
-    const { email, password,fullName, image } = createUserDto;
+    const { email, password, fullName, image } = createUserDto;
     const existUser = await this.userModel.findOne({ email });
     if (existUser) {
       throw new BadRequestException('email already exists');
@@ -36,25 +36,30 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const createdUser = await this.userModel.create({ email, password,fullName,image });
+    const createdUser = await this.userModel.create({
+      email,
+      password,
+      fullName,
+      image,
+    });
     return {
       message: 'user successfully created',
       user: createdUser,
     };
   }
   async deleteUserById(id: string) {
-    if(!isValidObjectId(id)) throw new BadRequestException('invalid id')
+    if (!isValidObjectId(id)) throw new BadRequestException('invalid id');
     const user = await this.userModel.findById(id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    const deleted = await this.userModel.findByIdAndDelete(id)
+    const deleted = await this.userModel.findByIdAndDelete(id);
     return { message: 'user successfully deleted', user: deleted };
   }
   async updateUserById(id: string, updateUserDto: UpdateUserDto) {
-    if(!isValidObjectId(id)) throw new BadRequestException('invalid id')
-      const user = await this.userModel.findById(id)
-    if(!user) throw new BadRequestException('user not found')
+    if (!isValidObjectId(id)) throw new BadRequestException('invalid id');
+    const user = await this.userModel.findById(id);
+    if (!user) throw new BadRequestException('user not found');
     const updatedUser = await this.userModel.findByIdAndUpdate(
       id,
       updateUserDto,
